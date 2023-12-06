@@ -48,7 +48,7 @@
                 <div class="card mb-4">
                     <div class="card-header"><b>Account Details</b></div>
                     <div class="card-body">
-                        <form method="POST" action="">
+                        <form method="POST" action=""  onsubmit="return validatePayment()">
                             <input type="hidden" name="user_id" value="<%= user._id%>">
                             <!-- Form Row-->
                             <div class="row gx-3 mb-3">
@@ -82,10 +82,10 @@
                                 <!-- Form Group (first name)-->
                                 <div class="col-md-6">
                                     <label class="small mb-1" for="inputFirstName">Enter Amount</label>
-                                    <input class="form-control" name="paid"  id="inputFirstName" type="text" required>
+                                    <input class="form-control" name="paid"  id="inputPaidAmount" type="text" required>
                                 </div>
                             </div>
-
+                            <span id="paymentError" style="color: red;"></span><br><br>
                             <!-- Save changes button-->
                             <button class="btn btn-warning" type="submit" id="paybt">PAY NOW</button>
                         </form>
@@ -101,6 +101,21 @@
     var x= <%=user.feesdue %>;
     if(x==0){
         paybt.setAttribute("disabled", true);
+    }
+    function validatePayment() {
+        var feesDue = <%= user.feesdue %>; // Fetch fees due value from the server
+        var paidAmount = parseFloat(document.getElementById('inputPaidAmount').value);
+        if (paidAmount < 0)
+        {
+            document.getElementById('paymentError').innerText = "Enter valid amount!";
+            return false;
+
+        }
+        if (paidAmount > feesDue) {
+            document.getElementById('paymentError').innerText = "Payment amount exceeds fees due!";
+            return false; // Prevent form submission
+        }
+        return true; // Allow form submission
     }
     
 </script>
