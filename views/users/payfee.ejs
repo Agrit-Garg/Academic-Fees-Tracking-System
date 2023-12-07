@@ -105,7 +105,7 @@
     function validatePayment() {
         var feesDue = <%= user.feesdue %>; // Fetch fees due value from the server
         var paidAmount = parseFloat(document.getElementById('inputPaidAmount').value);
-        if (paidAmount < 0)
+        if (paidAmount < 1)
         {
             document.getElementById('paymentError').innerText = "Enter valid amount!";
             return false;
