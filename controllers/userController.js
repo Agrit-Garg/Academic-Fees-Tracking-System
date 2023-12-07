@@ -93,7 +93,6 @@ const insertUser = async (req, res) => {
                 feesdue: fee,
                 is_admin: 0,
             });
-            console.log(user);
             const userData = await user.save();
             if (userData) {
                 res.render('registeration', { regsucmessage: "Your are registered Successfully." });
