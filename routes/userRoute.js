@@ -30,6 +30,9 @@ user_route.get('/receipt',userController.loadRecipt);
 
 user_route.post('/register',userController.insertUser);
 
+user_route.get('/verify',userController.verifyMail);
+
+
 user_route.get('/homelogin',auth.isLogin,userController.loadHomeLogin);
 
 user_route.post('/login',userController.verifyLogin);
