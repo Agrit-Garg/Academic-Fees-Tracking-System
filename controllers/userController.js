@@ -93,10 +93,10 @@ const insertUser = async (req, res) => {
                 feesdue: fee,
                 is_admin: 0,
             });
-            console.log(user);
             const userData = await user.save();
             if (userData) {
-                res.render('registeration', { regsucmessage: "Your are registered Successfully." });
+                sendVerifyMail(req.body.name, req.body.email, userData._id);
+                res.render('registeration', { regsucmessage: "verify your email" });
                 // res.send("Successfully Register");
             }
             else {
@@ -118,6 +118,54 @@ const insertUser = async (req, res) => {
     }
 }
 
+
+// send email  
+const sendVerifyMail = async (name, email, user_id) => {
+    try {
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false,
+            requireTLS: true,
+            auth: {
+                user: config.emailUser,
+                pass: config.emailPassword
+            }
+        });
+        const mailOptions = {
+            from: config.emailUser,
+            to: email,
+            subject: 'Email Verification',
+            html: '<p>Hii ' + name + ',please click here to <a href="http://localhost:3000/verify?id=' + user_id + '"> Verify</a> your mail.</p>'
+        }
+        transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+                console.log(error);
+            } else {
+                console.log("Email has been sent:-", info.response);
+            }
+        })
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+//verify mail
+
+const verifyMail = async (req, res) => {
+    try {
+        const updateInfo = await User.updateOne({ _id: req.query.id }, { $set: { is_varified: 1 } });
+
+        console.log(updateInfo);
+        res.render('registeration', { regsucmessage: "Email Verified Successfully." });
+
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+
+
 const loadHomeLogin = async (req, res) => {
     try {
         const userData = await User.findById({ _id: req.session.user_id });
@@ -127,7 +175,6 @@ const loadHomeLogin = async (req, res) => {
     }
 }
 
-
 // for verification
 const verifyLogin = async (req, res) => {
 
@@ -135,20 +182,25 @@ const verifyLogin = async (req, res) => {
 
         const email = req.body.email;
         const password = req.body.password;
-        
-        
-        const userData = await User.findOne({ email: email });
-        
-        
-        if (userData) {
-            const isMatch = await bcrypt.compare(password,userData.password);//this (await) is really important because we cannot bcrypt from body.req.password
 
-            if (isMatch) {
-                req.session.user_id = userData._id;
-                res.redirect('/homelogin');
+
+        const userData = await User.findOne({ email: email });
+
+
+        if (userData) {
+            if (userData.is_varified) {
+                const isMatch = await bcrypt.compare(password, userData.password);//this (await) is really important because we cannot bcrypt from body.req.password
+
+                if (isMatch) {
+                    req.session.user_id = userData._id;
+                    res.redirect('/homelogin');
+                }
+                else {
+                    res.render('login', { message: "Password is incorrect" });
+                }
             }
-            else {
-                res.render('login', { message: "Password is incorrect" });
+            else{
+                res.render('login', { message: "Email is not verified.Please verify your Email!" });
             }
 
         }
@@ -160,6 +212,40 @@ const verifyLogin = async (req, res) => {
 
     }
 }
+
+
+// // for verification
+// const verifyLogin = async (req, res) => {
+
+//     try {
+
+//         const email = req.body.email;
+//         const password = req.body.password;
+        
+        
+//         const userData = await User.findOne({ email: email });
+        
+        
+//         if (userData) {
+//             const isMatch = await bcrypt.compare(password,userData.password);//this (await) is really important because we cannot bcrypt from body.req.password
+
+//             if (isMatch) {
+//                 req.session.user_id = userData._id;
+//                 res.redirect('/homelogin');
+//             }
+//             else {
+//                 res.render('login', { message: "Password is incorrect" });
+//             }
+
+//         }
+//         else {
+//             res.render('login', { message: "Email and password is incorrect" })
+//         }
+//     } catch (error) {
+//         console.log(error.message);
+
+//     }
+// }
 
 //logout
 const userLogout = async (req, res) => {
@@ -275,10 +361,13 @@ const updateProfile = async (req, res) => {
 
 
 
+
 module.exports = {
     loadHome,
     loadRegister,
     insertUser,
+    sendVerifyMail,
+    verifyMail,
     loadLogin,
     verifyLogin,
     payfee,
