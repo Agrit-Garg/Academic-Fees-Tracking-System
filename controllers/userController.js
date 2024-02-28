@@ -213,40 +213,6 @@ const verifyLogin = async (req, res) => {
     }
 }
 
-
-// // for verification
-// const verifyLogin = async (req, res) => {
-
-//     try {
-
-//         const email = req.body.email;
-//         const password = req.body.password;
-        
-        
-//         const userData = await User.findOne({ email: email });
-        
-        
-//         if (userData) {
-//             const isMatch = await bcrypt.compare(password,userData.password);//this (await) is really important because we cannot bcrypt from body.req.password
-
-//             if (isMatch) {
-//                 req.session.user_id = userData._id;
-//                 res.redirect('/homelogin');
-//             }
-//             else {
-//                 res.render('login', { message: "Password is incorrect" });
-//             }
-
-//         }
-//         else {
-//             res.render('login', { message: "Email and password is incorrect" })
-//         }
-//     } catch (error) {
-//         console.log(error.message);
-
-//     }
-// }
-
 //logout
 const userLogout = async (req, res) => {
     try {
@@ -333,7 +299,6 @@ const updateProfile = async (req, res) => {
                 var userData = await User.findByIdAndUpdate(req.body.user_id, { $push: { paid: payment}, $inc: { totalpaid: feepaid },$set:{feesdue:0 } }, { new: true });
 
             }
-            // const userData = await User.findByIdAndUpdate(req.body.user_id, { $push: { paid: payment }, $inc: { feesdue: -feepaid, totalpaid: feepaid } }, { new: true });
             if(userData.feesdue==0)
             {
                 var stat = 3;
